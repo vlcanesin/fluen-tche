@@ -1,0 +1,87 @@
+/* Login.css */
+
+/* Center the login container on the page */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full height of the viewport */
+    background: linear-gradient(135deg, #ece9e6, #ffffff); /* Soft background gradient */
+  }
+  
+  /* Adjusted login container with consistent element width */
+  .login-container {
+    text-align: center;
+    padding: 40px;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    max-width: 450px; /* Moderate max-width for consistency */
+  }
+  
+  /* Consistent padding and width for form elements */
+  .form-group {
+    margin-bottom: 20px; /* Consistent spacing between form elements */
+  }
+  
+  input {
+    width: 90%; /* Ensure inputs are full-width within the container */
+    padding: 12px; /* Moderate padding */
+    border: 1px solid #ccc;
+    border-radius: 10px; /* Consistent border radius */
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  
+  input:focus {
+    border-color: #007bff; /* Border color on focus */
+  }
+  
+  button {
+    width: 100%; /* Full-width buttons to match input fields */
+    padding: 12px; /* Same padding as input fields for consistency */
+    border: none;
+    border-radius: 10px; /* Consistent border radius */
+    background-color: #007bff; /* Button background */
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0056b3; /* Darker on hover */
+  }
+  
+  /* Sign-in with Google button styling */
+  .google-signin {
+    background-color: #db4437;
+    margin-top: 15px; /* Consistent margin for spacing */
+  }
+  
+  .google-signin:hover {
+    background-color: #c42b24; /* Darker red on hover */
+  }
+  
+  /* Style for error messages */
+  .error-message {
+    color: red;
+    margin-bottom: 20px; /* Spacing for error message */
+  }
+  
+  /* Consistent styling for less important text */
+  .register-link {
+    color: #666;
+    font-size: 0.9em; /* Consistent font size for subtle text */
+  }
+  
+  .register-link a {
+    color: inherit; /* Keep the same color for links */
+    text-decoration: none;
+  }
+  
+  .register-link a:hover {
+    text-decoration: underline; /* Underline on hover */
+  }
+  

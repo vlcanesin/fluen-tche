@@ -1,0 +1,29 @@
+/* Header CSS */
+
+/* Full-width navigation bar with gray background */
+nav {
+    background-color: #e2e2e2; /* Light gray background */
+    padding-top: 10px; /* Padding to space out the content */
+    padding-bottom: 10px; /* Padding to space out the content */
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center the content vertically */
+    height: 40px; /* Small height for the nav bar */
+    width: 100%; /* Cover the full width of the screen */
+    position: sticky; /* Keep the nav bar fixed at the top */
+    top: 0; /* Position it at the top of the screen */
+    z-index: 1000; /* Ensure the header stays above other content */
+  }
+  
+  /* Style links within the nav bar */
+  nav a {
+    margin: 0 15px; /* Space between the links */
+    text-decoration: none; /* No underline on links */
+    color: #333; /* Dark gray text */
+    font-weight: bold; /* Bold text */
+    transition: color 0.3s ease; /* Smooth transition for hover effect */
+  }
+  
+  nav a:hover {
+    color: #007bff; /* Change to blue on hover */
+  }
