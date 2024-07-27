@@ -49,7 +49,7 @@ const Login = () => {
 
     useEffect(() => {
         if (currentUser) {
-            console.log("called setDefaultDBUser");
+            //console.log("called setDefaultDBUser");
             createDefaultDBUser(currentUser);
         }
     }, [currentUser]);

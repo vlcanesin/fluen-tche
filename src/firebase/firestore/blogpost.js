@@ -1,0 +1,99 @@
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore"; 
+import { db } from "../firebase";
+import { v4 as uuidv4 } from 'uuid';
+
+// Estrutura pode mudar
+class BlogPostData {
+    constructor(name, language, md_string, meta) {
+        this.name = name || "";
+        this.language = language || 0;
+        this.md_string = md_string || "";
+        this.meta = meta || {
+            author: "",
+            date: "",
+            n_likes: 0,
+            tags: [],
+            visible: false,
+            url: ""
+        };
+    }
+
+    // Method to set metadata
+    setMeta(author, date, n_likes, tags, visible, url) {
+        this.meta = {
+            author: author || "",
+            date: date || "",
+            n_likes: n_likes || 0,
+            tags: tags || [],
+            visible: visible || false,
+            url: url || ""
+        };
+    }
+
+    // Method to convert class instance to JSON
+    toJSON() {
+        return {
+            name: this.name,
+            language: this.language,
+            md_string: this.md_string,
+            meta: this.meta
+        };
+    }
+}
+
+async function createDefaultDBBlogPost() {
+    const reference = collection(db, "blogposts");
+    const uniqueUrl = uuidv4();
+    const newBlogPost = new BlogPostData(
+        meta = {
+            author: "",
+            date: "",
+            n_likes: 0,
+            tags: [],
+            visible: false,
+            url: uniqueUrl
+        }
+    );
+
+    try {
+        await addDoc(reference, newBlogPost.toJSON());
+        console.log("Blog Post added to Firestore:", uniqueUrl);
+        return uniqueUrl;
+    } catch (error) {
+        console.error("Error adding blog post to Firestore:", error);
+    }
+}
+
+async function updateDBBlogPost(url, blogPostData) {
+    const dbBlogPost = await fetchDBBlogPost(url);
+
+    if(!dbBlogPost) {
+        throw new Error('URL de blog post invalida');
+    } else {
+        try {
+            const bpRef = doc(db, "blogposts", dbBlogPost.id);
+            await updateDoc(bpRef, blogPostData.toJSON());
+            console.log("blogpost data updated:", url);
+        } catch (error) {
+            console.error("Error updating blogpost data:", error);
+        }
+    }
+}
+
+async function fetchDBBlogPost(url) {
+    const reference = collection(db, "blogposts");
+    const q = query(reference, where("meta.url", "==", url));
+
+    try {
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return null;
+        } else {
+            return querySnapshot.docs[0].data();
+        }
+    } catch (error) {
+        console.error("Error fetching blog post:", error);
+    }
+}
+
+export { BlogPostData, createDefaultDBBlogPost, updateDBBlogPost, fetchDBBlogPost }

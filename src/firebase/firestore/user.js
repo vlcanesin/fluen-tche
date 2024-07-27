@@ -1,6 +1,7 @@
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, updateDoc, doc, query, where } from "firebase/firestore"; 
 import { db } from "../firebase";
 
+// Atualizar para a estrutura completa
 class UserData {
     constructor(displayName = "", email = "", handle = "") {
         this.displayName = displayName;
@@ -43,15 +44,18 @@ async function createDefaultDBUser(user) {
     }
 }
 
-async function setDBUserData(user, userData) {
+async function updateDBUserData(user, userData) {
     const handle = generateDBHandle(user);
-    const dbUser = await fetchDBUser(handle);
+    let dbUser = await fetchDBUser(handle);
 
-    if(!dbUser) await createDefaultDBUser(user);
+    if(!dbUser) {
+        await createDefaultDBUser(user);
+        dbUser = await fetchDBUser(handle);
+    }
 
-    const reference = collection(db, "users");
     try {
-        await addDoc(reference, userData.toJSON());
+        const userRef = doc(db, "users", dbUser.id);
+        await updateDoc(userRef, userData.toJSON());
         console.log("User data updated:", handle);
     } catch (error) {
         console.error("Error updating user data:", error);
@@ -74,4 +78,4 @@ async function fetchDBUser(handle) {
     }
 }
 
-export { UserData, generateDBHandle, createDefaultDBUser, setDBUserData,fetchDBUser }
+export { UserData, generateDBHandle, createDefaultDBUser, updateDBUserData, fetchDBUser }
