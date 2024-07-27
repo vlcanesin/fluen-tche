@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { 
     doSignInWithEmailAndPassword,
     doSignInWithGoogle    
 } from "../../../firebase/auth";
 import { useAuth } from "../../../contexts/authContext";
+import { generateDBHandle, setDefaultDBUser } from "../../../firebase/database";
+
 import "./index.css";
 
-
 const Login = () => {
-    const { userLoggedIn } = useAuth();
+    const { userLoggedIn, currentUser } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -45,6 +46,12 @@ const Login = () => {
             }
         }
     };
+
+    useEffect(() => {
+        if (currentUser) {
+            setDefaultDBUser(currentUser);
+        }
+    }, [currentUser]);
 
     if (userLoggedIn) {
         // Redirect to another page if the user is already logged in

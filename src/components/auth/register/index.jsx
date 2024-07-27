@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { 
     doCreateUserWithEmailAndPassword,
     doSignInWithEmailAndPassword   
 } from "../../../firebase/auth";
 import { useAuth } from "../../../contexts/authContext";
+import { generateDBHandle, setDefaultDBUser } from "../../../firebase/database";
+
 import "./index.css";
 
 
 const Register = () => {
-    const { userLoggedIn } = useAuth();
+    const { userLoggedIn, currentUser } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -31,6 +33,11 @@ const Register = () => {
         }
     };
 
+    useEffect(() => {
+        if (currentUser) {
+            setDefaultDBUser(currentUser);
+        }
+    }, [currentUser]);
 
     if (userLoggedIn) {
         // Redirect to another page if the user is already logged in
