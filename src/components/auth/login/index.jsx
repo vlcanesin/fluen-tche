@@ -5,7 +5,7 @@ import {
     doSignInWithGoogle    
 } from "../../../firebase/auth";
 import { useAuth } from "../../../contexts/authContext";
-import { generateDBHandle, setDefaultDBUser } from "../../../firebase/database";
+import { createDefaultDBUser } from "../../../firebase/firestore/user";
 
 import "./index.css";
 
@@ -49,7 +49,8 @@ const Login = () => {
 
     useEffect(() => {
         if (currentUser) {
-            setDefaultDBUser(currentUser);
+            console.log("called setDefaultDBUser");
+            createDefaultDBUser(currentUser);
         }
     }, [currentUser]);
 

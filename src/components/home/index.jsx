@@ -1,25 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/authContext";
-import { generateDBHandle, getDBUser } from "../../firebase/database";
-
-async function fetchUser(handle) {
-    try {
-        const user = await getDBUser(handle);
-        console.log(user);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-}
+import { generateDBHandle, fetchDBUser } from "../../firebase/firestore/user";
 
 const Home = () => {
     const { currentUser } = useAuth();
-    const userHandle = generateDBHandle(currentUser);
-    //console.log(userHandle);
-    fetchUser(userHandle);
-    fetchUser("123121");
-    return(
-        <h1>Bem vindo, {currentUser.displayName ? currentUser.displayName : currentUser.email}!</h1>
+    const [userInDB, setUserInDB] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            if (currentUser) {
+                const userHandle = generateDBHandle(currentUser);
+                const fetchedUser = await fetchDBUser(userHandle);
+                setUserInDB(fetchedUser);
+            }
+        };
+
+        fetchUser();
+    }, [currentUser]);
+
+    return (
+        <div>
+            <h1>Bem vindo, {currentUser?.displayName || currentUser?.email}!</h1>
+            {userInDB && (
+                <div>
+                    <p>Database User Info:</p>
+                    <p>Display Name: {userInDB.displayName}</p>
+                    <p>Email: {userInDB.email}</p>
+                    <p>Handle: {userInDB.handle}</p>
+                </div>
+            )}
+        </div>
     );
-}
+};
 
 export default Home;

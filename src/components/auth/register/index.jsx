@@ -5,7 +5,7 @@ import {
     doSignInWithEmailAndPassword   
 } from "../../../firebase/auth";
 import { useAuth } from "../../../contexts/authContext";
-import { generateDBHandle, setDefaultDBUser } from "../../../firebase/database";
+import { createDefaultDBUser } from "../../../firebase/firestore/user";
 
 import "./index.css";
 
@@ -35,7 +35,7 @@ const Register = () => {
 
     useEffect(() => {
         if (currentUser) {
-            setDefaultDBUser(currentUser);
+            createDefaultDBUser(currentUser);
         }
     }, [currentUser]);
 
