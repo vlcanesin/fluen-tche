@@ -7,6 +7,10 @@ import {
 import {
     BlogPostData, createDefaultDBBlogPost, updateDBBlogPost, fetchDBBlogPost
 } from "../../firebase/firestore/blogpost";
+import { 
+    NotificationData, uploadDBNotification, fetchDBUserNotifications 
+} from "../../firebase/firestore/notifications";
+
 import { languageEnum, qtypeEnum } from "../../firebase/firestore/enums";
 
 const Home = () => {
@@ -16,6 +20,7 @@ const Home = () => {
     const [newBPUrl, setNewBPUrl] = useState(null);
     const [questData, setQuestData] = useState(null);
     const [bpData, setBpData] = useState(null);
+    const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -23,6 +28,10 @@ const Home = () => {
                 const userHandle = generateDBHandle(currentUser);
                 const fetchedUser = await fetchDBUser(userHandle);
                 setUserInDB(fetchedUser.data);
+            
+                // Fetch notifications for the current user
+                const fetchedNotifications = await fetchDBUserNotifications(currentUser);
+                setNotifications(fetchedNotifications);
             }
         };
 
@@ -79,6 +88,27 @@ const Home = () => {
         setBpData(fetchedBp.data);
     };
 
+    const handleUploadNotification = async () => {
+        if (currentUser) {
+            const notification = new NotificationData(
+                generateDBHandle(currentUser), // sender
+                generateDBHandle(currentUser), // receiver
+                "https://example.com/icon.png", // icon URL
+                "This is a test notification", // content
+                "07-28-2024", // current date
+                false, // is_read
+                ""  // id is not set
+            );
+
+            notification.id = await uploadDBNotification(notification);
+
+            // Update notifications state
+            const fetchedNotifications = await fetchDBUserNotifications(currentUser);
+            setNotifications(fetchedNotifications);
+            console.log(notifications);
+        }
+    };
+
     return (
         <div>
             <h1>Bem vindo, {currentUser?.displayName || currentUser?.email}!</h1>
@@ -102,6 +132,22 @@ const Home = () => {
                 <div>
                     <h2>Blog Post Data:</h2>
                     <pre>{JSON.stringify(bpData, null, 2)}</pre>
+                </div>
+            )}
+            <button onClick={handleUploadNotification}>Upload Notification</button>
+            {notifications && notifications.length > 0 && (
+                <div>
+                    <h2>Notifications:</h2>
+                    {notifications.map((notification) => (
+                        <div key={notification.id}>
+                            <p>Sender: {notification.data.sender}</p>
+                            <p>Receiver: {notification.data.receiver}</p>
+                            <p>Icon: <img src={notification.data.icon} alt="icon" /></p>
+                            <p>Content: {notification.data.content}</p>
+                            <p>Date: {notification.data.date.toDate().toString()}</p>
+                            <p>Read: {notification.data.is_read ? "Yes" : "No"}</p>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
