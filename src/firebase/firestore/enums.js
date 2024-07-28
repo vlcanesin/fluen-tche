@@ -106,4 +106,5 @@ class QTypeEnum {
 
 // Export the class instance
 const languageEnum = new LanguageEnum();
-export default languageEnum;
+const qtypeEnum = new QTypeEnum();
+export { languageEnum, qtypeEnum };

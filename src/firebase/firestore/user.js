@@ -71,7 +71,8 @@ async function fetchDBUser(handle) {
         if (querySnapshot.empty) {
             return null;
         } else {
-            return querySnapshot.docs[0].data();
+            const doc = querySnapshot.docs[0];
+            return { id: doc.id, data: doc.data() };
         }
     } catch (error) {
         console.error("Error fetching user:", error);

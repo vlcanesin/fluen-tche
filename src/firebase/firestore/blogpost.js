@@ -1,17 +1,19 @@
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, doc, updateDoc, query, where, Timestamp } from "firebase/firestore"; 
 import { db } from "../firebase";
 import { v4 as uuidv4 } from 'uuid';
+import languageEnum from "./enums";
 
 // Estrutura pode mudar
 class BlogPostData {
     constructor(name, language, md_string, meta) {
         this.name = name || "";
-        this.language = language || 0;
+        this.language = language || 1;
         this.md_string = md_string || "";
         this.meta = meta || {
             author: "",
-            date: "",
+            date: Timestamp.fromDate(new Date()),
             n_likes: 0,
+            n_dislikes: 0,
             tags: [],
             visible: false,
             url: ""
@@ -19,11 +21,12 @@ class BlogPostData {
     }
 
     // Method to set metadata
-    setMeta(author, date, n_likes, tags, visible, url) {
+    setMeta(author, date, n_likes, n_dislikes, tags, visible, url) {
         this.meta = {
             author: author || "",
-            date: date || "",
+            date: Timestamp.fromDate(new Date(date)) || Timestamp.fromDate(new Date()),
             n_likes: n_likes || 0,
+            n_dislikes: n_dislikes || 0,
             tags: tags || [],
             visible: visible || false,
             url: url || ""
@@ -45,10 +48,12 @@ async function createDefaultDBBlogPost() {
     const reference = collection(db, "blogposts");
     const uniqueUrl = uuidv4();
     const newBlogPost = new BlogPostData(
-        meta = {
+        "", 1, "",
+        {
             author: "",
             date: "",
             n_likes: 0,
+            n_dislikes: 0,
             tags: [],
             visible: false,
             url: uniqueUrl
@@ -67,6 +72,7 @@ async function createDefaultDBBlogPost() {
 async function updateDBBlogPost(url, blogPostData) {
     const dbBlogPost = await fetchDBBlogPost(url);
 
+    console.log("in updateBP");
     if(!dbBlogPost) {
         throw new Error('URL de blog post invalida');
     } else {
@@ -89,7 +95,8 @@ async function fetchDBBlogPost(url) {
         if (querySnapshot.empty) {
             return null;
         } else {
-            return querySnapshot.docs[0].data();
+            const doc = querySnapshot.docs[0];
+            return { id: doc.id, data: doc.data() };
         }
     } catch (error) {
         console.error("Error fetching blog post:", error);
