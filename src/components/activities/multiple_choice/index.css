@@ -1,0 +1,52 @@
+.question-container {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+}
+
+.question-title {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.question-statement {
+    font-size: 1em;
+    margin-bottom: 20px;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #d9534f;
+}
+
+.answers {
+    margin-bottom: 20px;
+}
+
+.answer-option {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.answer-option input {
+    margin-right: 10px;
+    align-self: flex-start;  /* Aligns the input at the start of the flex container */
+}
+
+.confirm-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.confirm-button:hover {
+    background-color: #0056b3;
+}

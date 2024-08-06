@@ -14,6 +14,7 @@ const Header = () => {
                     ?
                     <>
                         <Link onClick={() => { doSignOut().then(() => { navigate('/login') }) }} >Logout</Link>
+                        <Link to={"/test_quest"}>test_quest</Link>
                     </>
                     :
                     <>
