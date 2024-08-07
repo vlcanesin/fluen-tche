@@ -54,22 +54,53 @@ const Home = () => {
     };
 
     const updateData = async () => {
-        const quest = new QuestionnaireData(
-            "Um dia na praia", languageEnum.encode("PORTUGUES")
-        );
-        quest.addQuestion(
-            qtypeEnum.encode("MULTIPLA_ESCOLHA"), "Qual animal abaixo é provável que seja encontrado na praia?",
-            ["Camaleão", "Jacaré", "Caranguejo", "Tatu"], 2, false
-        );
-        quest.addQuestion(
-            qtypeEnum.encode("ASSOCIACAO"), "Associe as palavras similares",
-            ["Vento / Brisa", "Relaxar / Tranquilizar", "Litoral / Beira-mar", "Mar / Oceano"], 0, false
-        );
-        quest.setMeta(
-            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#praia", "#animais"], true, newQuestUrl
+        const questionnaireData = new QuestionnaireData(
+            "Vocabulary: Going Shopping", 
+            languageEnum.encode("INGLES"),
+            [], {}
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("MULTIPLA_ESCOLHA"),
+            "Jay went grocery shopping. Besides his weekly purchases, he also intends to buy stuff to prepare a birthday party for his mom. But first, his dinner for today. Which of the following is a list of items he can find at the produce section?",
+            [
+                'Beef, chicken, shrimp.',
+                'Potato, lettuce, tomato.',
+                'Bread, cake, oats.',
+                'Cheese, milk, yogurt.'
+            ],
+            1,
+            true 
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("ASSOCIACAO"),
+            "Now to buy the supplies for the party! Associate each item Jay bought with a verb related to what he’ll do with that item.",
+            [
+                'Candles#Light',
+                'Cake#Frost',
+                'Balloons#Inflate',
+                'Party Hats#Wear'
+            ],
+            1,
+            true 
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("ESCRITA"),
+            'Jay is now headed to checkout. The cashier asked him in Portuguese, “quantas caixas de leite você tem no total?" Translate their question to English so that Jay can understand it.',
+            [
+                'How many milk cartons do you have in total?'
+            ],
+            1,
+            true 
+        )
+
+        questionnaireData.setMeta(
+            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#shopping"], true, newQuestUrl
         );
 
-        await updateDBQuestionnaire(newQuestUrl, quest);
+        await updateDBQuestionnaire(newQuestUrl, questionnaireData);
 
         const blogPost = new BlogPostData(
             "Uma Aventura na Praia", languageEnum.encode("PORTUGUES"), "# Um dia incrível na praia..."

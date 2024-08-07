@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { languageEnum, qtypeEnum } from '../../firebase/firestore/enums.js'; // import your enums
-import MultipleChoiceQuestion from './multiple_choice/index.jsx';
-import AssociationQuestion from './association/index.jsx';
-import WritingQuestion from './writing/index.jsx';
+import { useParams } from 'react-router-dom';
+import { languageEnum, qtypeEnum } from '../../firebase/firestore/enums';
+import MultipleChoiceQuestion from './multiple_choice';
+import AssociationQuestion from './association';
+import WritingQuestion from './writing';
+import { fetchDBQuestionnaire } from '../../firebase/firestore/questionnaire';
 import './qwrapper.css';
 
 const QuestionTypeComponentMap = {
@@ -12,10 +14,41 @@ const QuestionTypeComponentMap = {
     [qtypeEnum.Questions.ESCRITA]: WritingQuestion,
 };
 
-const QuestionnaireWrapper = ({ data }) => {
+const QuestionnaireWrapper = () => {
+    const { url } = useParams();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const { name, language, questions, meta } = data;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const fetchedData = await fetchDBQuestionnaire(url);
+                setData(fetchedData.data);
+                setLoading(false);
+            } catch (error) {
+                setError(error);
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [url]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    if (!data) {
+        return <div>No data found</div>;
+    }
+
+    const { name, language, questions } = data;
     const totalQuestions = questions.length;
     const currentQuestion = questions[currentQuestionIndex];
     const QuestionComponent = QuestionTypeComponentMap[currentQuestion.type];
@@ -61,28 +94,7 @@ const QuestionnaireWrapper = ({ data }) => {
 };
 
 QuestionnaireWrapper.propTypes = {
-    data: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        language: PropTypes.number.isRequired,
-        questions: PropTypes.arrayOf(
-            PropTypes.shape({
-                type: PropTypes.number.isRequired,
-                statement: PropTypes.string.isRequired,
-                answers: PropTypes.array.isRequired,
-                correct_choice: PropTypes.number.isRequired,
-                random_order: PropTypes.bool.isRequired,
-            })
-        ).isRequired,
-        meta: PropTypes.shape({
-            author: PropTypes.string,
-            date: PropTypes.string,
-            n_likes: PropTypes.number,
-            n_dislikes: PropTypes.number,
-            tags: PropTypes.arrayOf(PropTypes.string),
-            visible: PropTypes.bool,
-            url: PropTypes.string,
-        }).isRequired,
-    }).isRequired,
+    url: PropTypes.string.isRequired,
 };
 
 export default QuestionnaireWrapper;
