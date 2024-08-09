@@ -1,9 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/authContext'; 
+import { useAuth } from './contexts/authContext';
 import Login from './components/auth/login';
-import Home from './components/home'; 
+import Home from './components/home';
 import Register from './components/auth/register';
+import QuestionnaireWrapper from './components/activities/qwrapper';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -23,6 +24,10 @@ const AppRouter = () => (
                     <Home />
                 </ProtectedRoute>
             }
+        />
+        <Route
+            path="/questionnaire/:url"
+            element={<QuestionnaireWrapper />}
         />
     </Routes>
 );

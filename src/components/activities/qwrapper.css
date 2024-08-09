@@ -1,0 +1,67 @@
+.questionnaire-wrapper {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.header {
+    text-align: center;
+}
+
+.questionnaire-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.language, .question-index {
+    font-weight: bold;
+}
+
+.question-container {
+    margin-top: 20px;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.navigation-buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.navigation-buttons button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.status-summary {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.status-item {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.status-item.correct {
+    background-color: lightgreen;
+}
+
+.status-item.incorrect {
+    background-color: lightcoral;
+}
+
+.status-item.unsolved {
+    background-color: lightgray;
+}

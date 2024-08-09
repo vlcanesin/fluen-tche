@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/authContext";
-import { generateDBHandle, fetchDBUser } from "../../firebase/firestore/user";
+import { generateDBHandle, fetchDBUser, updateDBUserData, UserData } from "../../firebase/firestore/user";
 import { 
     QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire
 } from "../../firebase/firestore/questionnaire";
@@ -10,7 +10,6 @@ import {
 import { 
     NotificationData, uploadDBNotification, fetchDBUserNotifications 
 } from "../../firebase/firestore/notifications";
-
 import { languageEnum, qtypeEnum } from "../../firebase/firestore/enums";
 
 const Home = () => {
@@ -23,19 +22,23 @@ const Home = () => {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const updateUser = async () => {
             if (currentUser) {
                 const userHandle = generateDBHandle(currentUser);
-                const fetchedUser = await fetchDBUser(userHandle);
-                setUserInDB(fetchedUser.data);
-            
+                //const fetchedUser = await fetchDBUser(userHandle);
+                const userData = new UserData(
+                    currentUser?.displayName, currentUser?.email, userHandle
+                );
+                updateDBUserData(currentUser, userData);
+                setUserInDB(userData.toJSON());
+
                 // Fetch notifications for the current user
                 const fetchedNotifications = await fetchDBUserNotifications(currentUser);
                 setNotifications(fetchedNotifications);
             }
         };
 
-        fetchUser();
+        updateUser();
     }, [currentUser]);
 
     const createData = async () => {
@@ -54,22 +57,53 @@ const Home = () => {
     };
 
     const updateData = async () => {
-        const quest = new QuestionnaireData(
-            "Um dia na praia", languageEnum.encode("PORTUGUES")
-        );
-        quest.addQuestion(
-            qtypeEnum.encode("MULTIPLA_ESCOLHA"), "Qual animal abaixo é provável que seja encontrado na praia?",
-            ["Camaleão", "Jacaré", "Caranguejo", "Tatu"], 2, false
-        );
-        quest.addQuestion(
-            qtypeEnum.encode("ASSOCIACAO"), "Associe as palavras similares",
-            ["Vento / Brisa", "Relaxar / Tranquilizar", "Litoral / Beira-mar", "Mar / Oceano"], 0, false
-        );
-        quest.setMeta(
-            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#praia", "#animais"], true, newQuestUrl
+        const questionnaireData = new QuestionnaireData(
+            "Vocabulary: Going Shopping", 
+            languageEnum.encode("INGLES"),
+            [], {}
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("MULTIPLA_ESCOLHA"),
+            "Jay went grocery shopping. Besides his weekly purchases, he also intends to buy stuff to prepare a birthday party for his mom. But first, his dinner for today. Which of the following is a list of items he can find at the produce section?",
+            [
+                'Beef, chicken, shrimp.',
+                'Potato, lettuce, tomato.',
+                'Bread, cake, oats.',
+                'Cheese, milk, yogurt.'
+            ],
+            1,
+            true 
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("ASSOCIACAO"),
+            "Now to buy the supplies for the party! Associate each item Jay bought with a verb related to what he’ll do with that item.",
+            [
+                'Candles#Light',
+                'Cake#Frost',
+                'Balloons#Inflate',
+                'Party Hats#Wear'
+            ],
+            1,
+            true 
+        )
+        
+        questionnaireData.addQuestion(
+            qtypeEnum.encode("ESCRITA"),
+            'Jay is now headed to checkout. The cashier asked him in Portuguese, “quantas caixas de leite você tem no total?" Translate their question to English so that Jay can understand it.',
+            [
+                'How many milk cartons do you have in total?'
+            ],
+            1,
+            true 
+        )
+
+        questionnaireData.setMeta(
+            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#shopping"], true, newQuestUrl
         );
 
-        await updateDBQuestionnaire(newQuestUrl, quest);
+        await updateDBQuestionnaire(newQuestUrl, questionnaireData);
 
         const blogPost = new BlogPostData(
             "Uma Aventura na Praia", languageEnum.encode("PORTUGUES"), "# Um dia incrível na praia..."
@@ -86,6 +120,29 @@ const Home = () => {
 
         const fetchedBp = await fetchDBBlogPost(newBPUrl);
         setBpData(fetchedBp.data);
+    };
+
+    const addToHistory = async () => {
+        if (currentUser && newQuestUrl) {
+            const handle = generateDBHandle(currentUser);
+            const user = await fetchDBUser(handle);
+            if (user) {
+                const historyItem = user.data.history.find(h => h.url === newQuestUrl);
+                if (!historyItem) {
+                    user.data.history.push({ url: newQuestUrl, has_liked: false, has_disliked: false });
+                    console.log(user.data);
+                    await updateDBUserData(currentUser, new UserData(user.data));
+                } else {
+                    console.log("Questionnaire URL already exists in the user's history.");
+                }
+            }
+        }
+    };
+
+    const handleNavigation = async (event) => {
+        event.preventDefault();
+        await addToHistory();
+        window.location.href = `/questionnaire/${newQuestUrl}`;
     };
 
     const handleUploadNotification = async () => {
@@ -114,14 +171,18 @@ const Home = () => {
             <h1>Bem vindo, {currentUser?.displayName || currentUser?.email}!</h1>
             {userInDB && (
                 <div>
-                    <p>Database User Info:</p>
-                    <p>Display Name: {userInDB.displayName}</p>
-                    <p>Email: {userInDB.email}</p>
-                    <p>Handle: {userInDB.handle}</p>
+                    <pre>{JSON.stringify(userInDB, null, 2)}</pre>
                 </div>
             )}
             <button onClick={createData}>Create Data</button>
             <button onClick={updateData}>Update Data</button>
+            {newQuestUrl && (
+                <div>
+                    <a href={`/questionnaire/${newQuestUrl}`} onClick={handleNavigation}>
+                        <button>Go to Questionnaire</button>
+                    </a>
+                </div>
+            )}
             {questData && (
                 <div>
                     <h2>Questionnaire Data:</h2>

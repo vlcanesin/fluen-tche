@@ -5,21 +5,38 @@ import languageEnum from "./enums";
 
 // Estrutura pode mudar
 class QuestionnaireData {
-    constructor(name, language, questions, meta) {
-        this.name = name || "";
-        this.language = language || 1;
-        this.questions = questions || [];
-        this.meta = meta || {
-            author: "",
-            date: Timestamp.fromDate(new Date()),
-            n_likes: 0,
-            n_dislikes: 0,
-            tags: [],
-            visible: false,
-            url: ""
-        };
+    constructor(nameOrJson, language, questions, meta) {
+        if (typeof nameOrJson === 'object') {
+            // JSON-based constructor
+            const json = nameOrJson;
+            this.name = json?.name || "";
+            this.language = json?.language || 1;
+            this.questions = json?.questions || [];
+            this.meta = json?.meta || {
+                author: "",
+                date: Timestamp.fromDate(new Date()),
+                n_likes: 0,
+                n_dislikes: 0,
+                tags: [],
+                visible: false,
+                url: ""
+            };
+        } else {
+            // Old constructor with individual parameters
+            this.name = nameOrJson || "";
+            this.language = language || 1;
+            this.questions = questions || [];
+            this.meta = meta || {
+                author: "",
+                date: Timestamp.fromDate(new Date()),
+                n_likes: 0,
+                n_dislikes: 0,
+                tags: [],
+                visible: false,
+                url: ""
+            };
+        }
     }
-
     // Method to add a question
     addQuestion(type, statement, answers, correct_choice, random_order) {
         const question = {

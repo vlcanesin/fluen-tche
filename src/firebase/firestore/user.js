@@ -3,17 +3,60 @@ import { db } from "../firebase";
 
 // Atualizar para a estrutura completa
 class UserData {
-    constructor(displayName = "", email = "", handle = "") {
-        this.displayName = displayName;
-        this.email = email;
-        this.handle = handle;
+    constructor(
+        data = {}
+    ) {
+        if (typeof data === 'object' && !Array.isArray(data)) {
+            this.displayName = data.displayName || "";
+            this.email = data.email || "";
+            this.handle = data.handle || "";
+            this.activities = data.activities || [];
+            this.history = data.history || []; // url + has_liked + has_disliked
+            this.prof_pic_url = data.prof_pic_url || "";
+            this.bio = data.bio || "";
+            this.followers = data.followers || [];  // list of handles
+            this.following = data.following || [];
+            this.learning = data.learning || [];    // list of languages (int)
+            this.teaching = data.teaching || [];
+            this.badges = data.badges || [];        // list of badges (int)
+        } else {
+            this.displayName = arguments[0] || "";
+            this.email = arguments[1] || "";
+            this.handle = arguments[2] || "";
+            this.activities = arguments[3] || [];
+            this.history = arguments[4] || []; // url + has_liked + has_disliked
+            this.prof_pic_url = arguments[5] || "";
+            this.bio = arguments[6] || "";
+            this.followers = arguments[7] || [];  // list of handles
+            this.following = arguments[8] || [];
+            this.learning = arguments[9] || [];    // list of languages (int)
+            this.teaching = arguments[10] || [];
+            this.badges = arguments[11] || [];        // list of badges (int)
+        }
+    }
+
+    addToHistory(url, has_liked = false, has_disliked = false) {
+        this.history.push({
+            url: url,
+            has_liked: has_liked,
+            has_disliked: has_disliked
+        });
     }
 
     toJSON() {
         return {
             displayName: this.displayName,
             email: this.email,
-            handle: this.handle
+            handle: this.handle,        
+            activities: this.activities,
+            history: this.history,
+            prof_pic_url: this.prof_pic_url,
+            bio: this.bio,
+            followers: this.followers,
+            following: this.following,
+            learning: this.learning,
+            teaching: this.teaching,
+            badges: this.badges 
         };
     }
 }
