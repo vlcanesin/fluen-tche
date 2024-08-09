@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './index.css';
 
-const AssociationQuestion = ({ data }) => {
-    const { statement, answers, correct_choice, random_order } = data;
+const AssociationQuestion = ({ data, updateStatus }) => {
+    const { statement, answers, random_order } = data;
 
     const parsedAnswers = answers.map((answer, index) => {
         const [left, right] = answer.split('#');
@@ -35,9 +35,13 @@ const AssociationQuestion = ({ data }) => {
             const rightItem = shuffledRight[selectedRight];
 
             if (leftItem[1] === rightItem[1]) {
-                setCorrectPairs([...correctPairs, [leftItem, rightItem]]);
+                const newCorrectPairs = [...correctPairs, [leftItem, rightItem]];
+                setCorrectPairs(newCorrectPairs);
                 setShuffledLeft(shuffledLeft.filter((_, i) => i !== selectedLeft));
                 setShuffledRight(shuffledRight.filter((_, i) => i !== selectedRight));
+                if (newCorrectPairs.length === parsedAnswers.length) {
+                    updateStatus('correct');
+                }
             } else {
                 setIncorrectPair(true);
                 setTimeout(() => setIncorrectPair(false), 1000);
@@ -96,9 +100,9 @@ AssociationQuestion.propTypes = {
         type: PropTypes.number.isRequired,
         statement: PropTypes.string.isRequired,
         answers: PropTypes.arrayOf(PropTypes.string).isRequired,
-        correct_choice: PropTypes.number.isRequired,
         random_order: PropTypes.bool.isRequired,
     }).isRequired,
+    updateStatus: PropTypes.func.isRequired,
 };
 
 export default AssociationQuestion;

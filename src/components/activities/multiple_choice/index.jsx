@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './index.css';
 
-const MultipleChoiceQuestion = ({ data }) => {
+const MultipleChoiceQuestion = ({ data, updateStatus }) => {
     const { statement, answers, correct_choice, random_order } = data;
 
     const [selectedOption, setSelectedOption] = useState(null);
@@ -28,9 +28,11 @@ const MultipleChoiceQuestion = ({ data }) => {
         if (selectedAnswer.index === correct_choice) {
             setIsCorrect(true);
             setFeedback('Correct!');
+            updateStatus('correct');
         } else {
             setIsCorrect(false);
             setFeedback(`Incorrect! The correct answer is: ${answers[correct_choice]}`);
+            updateStatus('incorrect');
         }
     };
 
@@ -70,6 +72,7 @@ MultipleChoiceQuestion.propTypes = {
         correct_choice: PropTypes.number.isRequired,
         random_order: PropTypes.bool,
     }).isRequired,
+    updateStatus: PropTypes.func.isRequired,
 };
 
 export default MultipleChoiceQuestion;

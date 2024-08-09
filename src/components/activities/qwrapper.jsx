@@ -5,7 +5,8 @@ import { languageEnum, qtypeEnum } from '../../firebase/firestore/enums';
 import MultipleChoiceQuestion from './multiple_choice';
 import AssociationQuestion from './association';
 import WritingQuestion from './writing';
-import { fetchDBQuestionnaire } from '../../firebase/firestore/questionnaire';
+import { fetchDBQuestionnaire, QuestionnaireData } from '../../firebase/firestore/questionnaire';
+import EndScreen from './endscreen';
 import './qwrapper.css';
 
 const QuestionTypeComponentMap = {
@@ -20,12 +21,15 @@ const QuestionnaireWrapper = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [questionStatus, setQuestionStatus] = useState([]);
+    const [showEndScreen, setShowEndScreen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const fetchedData = await fetchDBQuestionnaire(url);
                 setData(fetchedData.data);
+                setQuestionStatus(fetchedData.data.questions.map(() => 'unsolved'));
                 setLoading(false);
             } catch (error) {
                 setError(error);
@@ -35,6 +39,30 @@ const QuestionnaireWrapper = () => {
 
         fetchData();
     }, [url]);
+
+    const updateQuestionStatus = (index, status) => {
+        setQuestionStatus(prevStatus => {
+            const newStatus = [...prevStatus];
+            newStatus[index] = status;
+            return newStatus;
+        });
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        }
+    };
+
+    const handlePrevious = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+        }
+    };
+
+    const handleShowEndScreen = () => {
+        setShowEndScreen(true);
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -53,18 +81,6 @@ const QuestionnaireWrapper = () => {
     const currentQuestion = questions[currentQuestionIndex];
     const QuestionComponent = QuestionTypeComponentMap[currentQuestion.type];
 
-    const handleNext = () => {
-        if (currentQuestionIndex < totalQuestions - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-        }
-    };
-
-    const handlePrevious = () => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(currentQuestionIndex - 1);
-        }
-    };
-
     return (
         <div className="questionnaire-wrapper">
             <header>
@@ -79,22 +95,42 @@ const QuestionnaireWrapper = () => {
                 </div>
             </header>
             <div className="question-container">
-                {QuestionComponent && <QuestionComponent data={currentQuestion} />}
+                {showEndScreen ? (
+                    <EndScreen
+                        summary={questionStatus}
+                        data={new QuestionnaireData(data)}
+                    />
+                ) : (
+                    <QuestionComponent
+                        data={currentQuestion}
+                        updateStatus={(status) => updateQuestionStatus(currentQuestionIndex, status)}
+                    />
+                )}
             </div>
-            <div className="navigation-buttons">
-                <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
-                    &lt; Previous
-                </button>
-                <button onClick={handleNext} disabled={currentQuestionIndex === totalQuestions - 1}>
-                    Next &gt;
-                </button>
+            {!showEndScreen && (
+                <div className="navigation-buttons">
+                    <button onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
+                        &lt; Previous
+                    </button>
+                    <button onClick={handleNext} disabled={currentQuestionIndex === totalQuestions - 1}>
+                        Next &gt;
+                    </button>
+                    {questionStatus.every(status => status !== 'unsolved') && (
+                        <button onClick={handleShowEndScreen}>
+                            Complete
+                        </button>
+                    )}
+                </div>
+            )}
+            <div className="status-summary">
+                {questionStatus.map((status, index) => (
+                    <div key={index} className={`status-item ${status}`}>
+                        Question {index + 1}: {status}
+                    </div>
+                ))}
             </div>
         </div>
     );
-};
-
-QuestionnaireWrapper.propTypes = {
-    url: PropTypes.string.isRequired,
 };
 
 export default QuestionnaireWrapper;
