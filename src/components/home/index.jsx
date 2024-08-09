@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/authContext";
-import { generateDBHandle, fetchDBUser } from "../../firebase/firestore/user";
+import { generateDBHandle, fetchDBUser, updateDBUserData, UserData } from "../../firebase/firestore/user";
 import { 
     QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire
 } from "../../firebase/firestore/questionnaire";
@@ -10,7 +10,6 @@ import {
 import { 
     NotificationData, uploadDBNotification, fetchDBUserNotifications 
 } from "../../firebase/firestore/notifications";
-
 import { languageEnum, qtypeEnum } from "../../firebase/firestore/enums";
 
 const Home = () => {
@@ -23,19 +22,23 @@ const Home = () => {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const updateUser = async () => {
             if (currentUser) {
                 const userHandle = generateDBHandle(currentUser);
-                const fetchedUser = await fetchDBUser(userHandle);
-                setUserInDB(fetchedUser.data);
-            
+                //const fetchedUser = await fetchDBUser(userHandle);
+                const userData = new UserData(
+                    currentUser?.displayName, currentUser?.email, userHandle
+                );
+                updateDBUserData(currentUser, userData);
+                setUserInDB(userData.toJSON());
+
                 // Fetch notifications for the current user
                 const fetchedNotifications = await fetchDBUserNotifications(currentUser);
                 setNotifications(fetchedNotifications);
             }
         };
 
-        fetchUser();
+        updateUser();
     }, [currentUser]);
 
     const createData = async () => {
@@ -119,6 +122,29 @@ const Home = () => {
         setBpData(fetchedBp.data);
     };
 
+    const addToHistory = async () => {
+        if (currentUser && newQuestUrl) {
+            const handle = generateDBHandle(currentUser);
+            const user = await fetchDBUser(handle);
+            if (user) {
+                const historyItem = user.data.history.find(h => h.url === newQuestUrl);
+                if (!historyItem) {
+                    user.data.history.push({ url: newQuestUrl, has_liked: false, has_disliked: false });
+                    console.log(user.data);
+                    await updateDBUserData(currentUser, new UserData(user.data));
+                } else {
+                    console.log("Questionnaire URL already exists in the user's history.");
+                }
+            }
+        }
+    };
+
+    const handleNavigation = async (event) => {
+        event.preventDefault();
+        await addToHistory();
+        window.location.href = `/questionnaire/${newQuestUrl}`;
+    };
+
     const handleUploadNotification = async () => {
         if (currentUser) {
             const notification = new NotificationData(
@@ -145,14 +171,18 @@ const Home = () => {
             <h1>Bem vindo, {currentUser?.displayName || currentUser?.email}!</h1>
             {userInDB && (
                 <div>
-                    <p>Database User Info:</p>
-                    <p>Display Name: {userInDB.displayName}</p>
-                    <p>Email: {userInDB.email}</p>
-                    <p>Handle: {userInDB.handle}</p>
+                    <pre>{JSON.stringify(userInDB, null, 2)}</pre>
                 </div>
             )}
             <button onClick={createData}>Create Data</button>
             <button onClick={updateData}>Update Data</button>
+            {newQuestUrl && (
+                <div>
+                    <a href={`/questionnaire/${newQuestUrl}`} onClick={handleNavigation}>
+                        <button>Go to Questionnaire</button>
+                    </a>
+                </div>
+            )}
             {questData && (
                 <div>
                     <h2>Questionnaire Data:</h2>
