@@ -131,4 +131,22 @@ async function fetchDBQuestionnaire(url) {
     }
 }
 
-export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire }
+async function listDBQuestionnaire(i) {
+    const reference = collection(db, "questionnaires");
+    const q = query(reference);
+
+    try {
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty || querySnapshot.docs[i] == querySnapshot.empty) {
+            return null;
+        } else {
+            const doc = querySnapshot.docs[i];
+            return { data: doc.data() };
+        }
+
+    } catch (error) {
+        console.error("Error fetching questionnaire list:", error);
+    }
+}
+
+export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire }
