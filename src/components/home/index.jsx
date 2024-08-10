@@ -22,12 +22,12 @@ const Home = () => {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        const updateUser = async () => {
+        const updateUser = async () => {           
             if (currentUser) {
                 const userHandle = generateDBHandle(currentUser);
                 //const fetchedUser = await fetchDBUser(userHandle);
                 const userData = new UserData(
-                    currentUser?.displayName, currentUser?.email, userHandle
+                    currentUser?.email, userHandle
                 );
                 updateDBUserData(currentUser, userData);
                 setUserInDB(userData.toJSON());
