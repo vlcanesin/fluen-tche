@@ -7,9 +7,9 @@ class UserData {
         data = {}
     ) {
         if (typeof data === 'object' && !Array.isArray(data)) {
-            this.displayName = data.displayName || "";
             this.email = data.email || "";
             this.handle = data.handle || "";
+            this.displayName = data.displayName || "";
             this.activities = data.activities || [];
             this.history = data.history || []; // url + has_liked + has_disliked
             this.prof_pic_url = data.prof_pic_url || "";
@@ -20,9 +20,9 @@ class UserData {
             this.teaching = data.teaching || [];
             this.badges = data.badges || [];        // list of badges (int)
         } else {
-            this.displayName = arguments[0] || "";
-            this.email = arguments[1] || "";
-            this.handle = arguments[2] || "";
+            this.email = arguments[0] || "";
+            this.handle = arguments[1] || "";
+            this.displayName = arguments[2] || "";
             this.activities = arguments[3] || [];
             this.history = arguments[4] || []; // url + has_liked + has_disliked
             this.prof_pic_url = arguments[5] || "";

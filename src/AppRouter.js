@@ -5,6 +5,7 @@ import Login from './components/auth/login';
 import Home from './components/home';
 import Register from './components/auth/register';
 import QuestionnaireWrapper from './components/activities/qwrapper';
+import CreateQuestionnaire from './components/createQuest';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,14 @@ const AppRouter = () => (
         <Route
             path="/questionnaire/:url"
             element={<QuestionnaireWrapper />}
+        />
+        <Route
+            path="/create"
+            element={
+                <ProtectedRoute>
+                    <CreateQuestionnaire />
+                </ProtectedRoute>
+            }
         />
     </Routes>
 );
