@@ -152,6 +152,13 @@ async function listDBQuestionnaire() {
 }
 
 async function deleteDBQuestionnaire(url) {
+    // Se a URL for undefined, buscar todos os questionários com URL undefined
+    if (url === undefined) {
+        await deleteQuestionnairesWithUndefinedUrl();
+        return;
+    }
+
+    // Caso contrário, buscar e deletar o questionário com a URL fornecida
     const dbQuestionnaire = await fetchDBQuestionnaire(url);
     if (!dbQuestionnaire) {
         throw new Error('URL de questionário inválida');
@@ -163,6 +170,30 @@ async function deleteDBQuestionnaire(url) {
         } catch (error) {
             console.error("Erro ao deletar o questionário:", error);
         }
+    }
+}
+
+async function deleteQuestionnairesWithUndefinedUrl() {
+    const reference = collection(db, "questionnaires");
+    // Criar uma consulta para encontrar documentos onde a URL é undefined
+    const q = query(reference, where("meta.url", "==", null));
+
+    try {
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            console.log("Nenhum questionário com URL undefined encontrado.");
+            return;
+        }
+
+        // Deletar todos os documentos encontrados
+        for (const docSnap of querySnapshot.docs) {
+            const docRef = doc(db, "questionnaires", docSnap.id);
+            await deleteDoc(docRef);
+            console.log("Questionário deletado com ID:", docSnap.id);
+        }
+    } catch (error) {
+        console.error("Erro ao deletar questionários com URL undefined:", error);
     }
 }
 
