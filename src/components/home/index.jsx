@@ -1,217 +1,179 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/authContext";
-import { generateDBHandle, fetchDBUser, updateDBUserData, UserData } from "../../firebase/firestore/user";
 import { 
-    QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire,
-    listDBQuestionnaire
+    generateDBHandle, updateDBUserData, UserData 
+} from "../../firebase/firestore/user";
+import { 
+    createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire, QuestionnaireData, deleteDBQuestionnaire
 } from "../../firebase/firestore/questionnaire";
-import {
-    BlogPostData, createDefaultDBBlogPost, updateDBBlogPost, fetchDBBlogPost
-} from "../../firebase/firestore/blogpost";
-import { 
-    NotificationData, uploadDBNotification, fetchDBUserNotifications 
-} from "../../firebase/firestore/notifications";
-import { languageEnum, qtypeEnum } from "../../firebase/firestore/enums";
 
 const Home = () => {
-    const { currentUser } = useAuth();
-    const [userInDB, setUserInDB] = useState(null);
-    const [newQuestUrl, setNewQuestUrl] = useState(null);
-    const [newBPUrl, setNewBPUrl] = useState(null);
-    const [questData, setQuestData] = useState(null);
-    const [bpData, setBpData] = useState(null);
-    const [listQuest, setListQuestData] = useState(null);
-    const [notifications, setNotifications] = useState([]);
+    const { currentUser } = useAuth(); // Obtém o usuário atual do contexto de autenticação
+    const [userInDB, setUserInDB] = useState(null); // Estado para armazenar dados do usuário
+    const [newQuestUrl, setNewQuestUrl] = useState(null); // Estado para armazenar a URL do novo questionário
+    const [questData, setQuestData] = useState({ title: "", language: "", questions: [] }); // Estado para armazenar dados do questionário
+    const [listQuestData, setListQuestData] = useState([]); // Estado para armazenar a lista de questionários
 
     useEffect(() => {
         const updateUser = async () => {           
             if (currentUser) {
                 const userHandle = generateDBHandle(currentUser);
-                //const fetchedUser = await fetchDBUser(userHandle);
-                const userData = new UserData(
-                    currentUser?.email, userHandle
-                );
-                updateDBUserData(currentUser, userData);
-                setUserInDB(userData.toJSON());
-
-                // Fetch notifications for the current user
-                const fetchedNotifications = await fetchDBUserNotifications(currentUser);
-                setNotifications(fetchedNotifications);
+                const userData = new UserData(currentUser.email, userHandle);
+                await updateDBUserData(currentUser, userData);
+                setUserInDB(userData.toJSON()); // Atualiza os dados do usuário no estado
             }
         };
-
-        updateUser();
+        updateUser(); // Chama a função para atualizar os dados do usuário
     }, [currentUser]);
 
-    const createData = async () => {
-        const questUrl = await createDefaultDBQuestionnaire();
-        setNewQuestUrl(questUrl);
-
-        const bpUrl = await createDefaultDBBlogPost();
-        setNewBPUrl(bpUrl);
-
-        // Fetch the created data to display it
-        const fetchedQuest = await fetchDBQuestionnaire(questUrl);
-        setQuestData(fetchedQuest.data);
-
-        const fetchedBp = await fetchDBBlogPost(bpUrl);
-        setBpData(fetchedBp.data);
+    // Função para criar um novo questionário
+    const createQuestionnaire = async () => {
+        const questUrl = await createDefaultDBQuestionnaire(); // Cria um novo questionário e obtém sua URL
+        setNewQuestUrl(questUrl); // Define a URL do novo questionário no estado
+        setQuestData({ title: "", language: "", questions: [] }); // Reseta os dados do questionário
     };
 
-    const updateData = async () => {
-        const questionnaireData = new QuestionnaireData(
-            "Vocabulary: Going Shopping", 
-            languageEnum.encode("INGLES"),
-            [], {}
-        )
-        
-        questionnaireData.addQuestion(
-            qtypeEnum.encode("MULTIPLA_ESCOLHA"),
-            "Jay went grocery shopping. Besides his weekly purchases, he also intends to buy stuff to prepare a birthday party for his mom. But first, his dinner for today. Which of the following is a list of items he can find at the produce section?",
-            [
-                'Beef, chicken, shrimp.',
-                'Potato, lettuce, tomato.',
-                'Bread, cake, oats.',
-                'Cheese, milk, yogurt.'
-            ],
-            1,
-            true 
-        )
-        
-        questionnaireData.addQuestion(
-            qtypeEnum.encode("ASSOCIACAO"),
-            "Now to buy the supplies for the party! Associate each item Jay bought with a verb related to what he’ll do with that item.",
-            [
-                'Candles#Light',
-                'Cake#Frost',
-                'Balloons#Inflate',
-                'Party Hats#Wear'
-            ],
-            1,
-            true 
-        )
-        
-        questionnaireData.addQuestion(
-            qtypeEnum.encode("ESCRITA"),
-            'Jay is now headed to checkout. The cashier asked him in Portuguese, “quantas caixas de leite você tem no total?" Translate their question to English so that Jay can understand it.',
-            [
-                'How many milk cartons do you have in total?'
-            ],
-            1,
-            true 
-        )
-
-        questionnaireData.setMeta(
-            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#shopping"], true, newQuestUrl
-        );
-
-        await updateDBQuestionnaire(newQuestUrl, questionnaireData);
-
-        const blogPost = new BlogPostData(
-            "Uma Aventura na Praia", languageEnum.encode("PORTUGUES"), "# Um dia incrível na praia..."
-        );
-        blogPost.setMeta(
-            generateDBHandle(currentUser), "07-28-2024", 0, 0, ["#praia", "#aventura"], true, newBPUrl
-        );
-
-        await updateDBBlogPost(newBPUrl, blogPost);
-
-        // Fetch the created data to display it
-        const fetchedQuest = await fetchDBQuestionnaire(newQuestUrl);
-        setQuestData(fetchedQuest.data);
-
-        const fetchedBp = await fetchDBBlogPost(newBPUrl);
-        setBpData(fetchedBp.data);
-    };
-
-    const addToHistory = async () => {
-        if (currentUser && newQuestUrl) {
-            const handle = generateDBHandle(currentUser);
-            const user = await fetchDBUser(handle);
-            if (user) {
-                const historyItem = user.data.history.find(h => h.url === newQuestUrl);
-                if (!historyItem) {
-                    user.data.history.push({ url: newQuestUrl, has_liked: false, has_disliked: false });
-                    console.log(user.data);
-                    await updateDBUserData(currentUser, new UserData(user.data));
-                } else {
-                    console.log("Questionnaire URL already exists in the user's history.");
-                }
-            }
+    // Função para atualizar o questionário
+    const updateQuestionnaire = async () => {
+        if (newQuestUrl && questData.title && questData.language) {
+            const questionnaireData = new QuestionnaireData(
+                questData.title, questData.language, questData.questions, {}
+            );
+            // Define os metadados do questionário
+            questionnaireData.setMeta(generateDBHandle(currentUser), new Date().toISOString(), 0, 0, [], true, newQuestUrl);
+            await updateDBQuestionnaire(newQuestUrl, questionnaireData); // Atualiza o questionário no banco de dados
+            const fetchedQuest = await fetchDBQuestionnaire(newQuestUrl);
+            setQuestData(fetchedQuest.data); // Atualiza os dados do questionário com os dados do banco
         }
     };
 
-    const handleNavigation = async (event) => {
-        event.preventDefault();
-        await addToHistory();
-        window.location.href = `/questionnaire/${newQuestUrl}`;
+    // Função para listar todos os questionários
+    const listQuestionnaires = async () => {
+        try {
+            const listedQuests = await listDBQuestionnaire(); // Obtém todos os questionários
+            setListQuestData(listedQuests); // Atualiza o estado com a lista de questionários
+        } catch (error) {
+            console.error("Error fetching questionnaires: ", error);
+        }
+    };    
+
+    // Função para manipular alterações nos campos do formulário
+    const handleInputChange = (event, field) => {
+        setQuestData({ ...questData, [field]: event.target.value });
     };
 
-    const handleUploadNotification = async () => {
-        if (currentUser) {
-            const notification = new NotificationData(
-                generateDBHandle(currentUser), // sender
-                generateDBHandle(currentUser), // receiver
-                "https://example.com/icon.png", // icon URL
-                "This is a test notification", // content
-                "07-28-2024", // current date
-                false, // is_read
-                ""  // id is not set
-            );
+    // Função para adicionar uma nova pergunta ao questionário
+    const handleAddQuestion = () => {
+        setQuestData({
+            ...questData,
+            questions: [...questData.questions, { type: "MULTIPLA_ESCOLHA", text: "", options: [""] }]
+        });
+    };
 
-            notification.id = await uploadDBNotification(notification);
+    // Função para manipular alterações em uma pergunta específica
+    const handleQuestionChange = (event, index, field) => {
+        const questions = [...questData.questions];
+        questions[index][field] = event.target.value;
+        setQuestData({ ...questData, questions });
+    };
 
-            // Update notifications state
-            const fetchedNotifications = await fetchDBUserNotifications(currentUser);
-            setNotifications(fetchedNotifications);
-            console.log(notifications);
+    // Função para manipular alterações nas opções de uma pergunta
+    const handleOptionChange = (event, qIndex, oIndex) => {
+        const questions = [...questData.questions];
+        questions[qIndex].options[oIndex] = event.target.value;
+        setQuestData({ ...questData, questions });
+    };
+
+    // Função para salvar o questionário
+    const handleSave = () => {
+        updateQuestionnaire();
+    };
+
+    // Função para descartar as alterações do questionário
+    const handleDiscard = () => {
+        setQuestData({ title: "", language: "", questions: [] });
+        setNewQuestUrl(null);
+    };
+
+    // Função para deletar um questionário
+    const handleDelete = async (url) => {
+        try {
+            await deleteDBQuestionnaire(url); // Deleta o questionário do banco de dados
+            // Atualiza a lista de questionários após a deleção
+            const updatedList = listQuestData.filter(quest => quest.data.meta.url !== url);
+            setListQuestData(updatedList); // Atualiza o estado com a lista filtrada
+            alert("Questionário deletado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao deletar o questionário:", error);
         }
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>Bem vindo, {currentUser?.displayName || currentUser?.email}!</h1>
-            {userInDB && (
-                <div>
-                    <pre>{JSON.stringify(userInDB, null, 2)}</pre>
-                </div>
-            )}
-            <button onClick={createData}>Create Data</button>
-            <button onClick={updateData}>Update Data</button>
+            {userInDB && <div className="user-info"><pre>{JSON.stringify(userInDB, null, 2)}</pre></div>}
+
+            <div className="buttons">
+                <button onClick={createQuestionnaire}>Create New Questionnaire</button>
+                <button onClick={listQuestionnaires}>List Questionnaires</button>
+            </div>
+
             {newQuestUrl && (
-                <div>
-                    <a href={`/questionnaire/${newQuestUrl}`} onClick={handleNavigation}>
-                        <button>Go to Questionnaire</button>
-                    </a>
-                </div>
-            )}
-            {questData && (
-                <div>
-                    <h2>Questionnaire Data:</h2>
-                    <pre>{JSON.stringify(questData, null, 2)}</pre>
-                </div>
-            )}
-            {bpData && (
-                <div>
-                    <h2>Blog Post Data:</h2>
-                    <pre>{JSON.stringify(bpData, null, 2)}</pre>
-                </div>
-            )}
-            <button onClick={handleUploadNotification}>Upload Notification</button>
-            {notifications && notifications.length > 0 && (
-                <div>
-                    <h2>Notifications:</h2>
-                    {notifications.map((notification) => (
-                        <div key={notification.id}>
-                            <p>Sender: {notification.data.sender}</p>
-                            <p>Receiver: {notification.data.receiver}</p>
-                            <p>Icon: <img src={notification.data.icon} alt="icon" /></p>
-                            <p>Content: {notification.data.content}</p>
-                            <p>Date: {notification.data.date.toDate().toString()}</p>
-                            <p>Read: {notification.data.is_read ? "Yes" : "No"}</p>
+                <div className="questionnaire-form">
+                    <h2>Create/Update Questionnaire</h2>
+                    <input 
+                        type="text" 
+                        placeholder="Title" 
+                        value={questData.title} 
+                        onChange={(e) => handleInputChange(e, "title")} 
+                    />
+                    <input 
+                        type="text" 
+                        placeholder="Language" 
+                        value={questData.language} 
+                        onChange={(e) => handleInputChange(e, "language")} 
+                    />
+                    {questData.questions.map((question, index) => (
+                        <div key={index} className="question-block">
+                            <input 
+                                type="text" 
+                                placeholder="Question Text" 
+                                value={question.text} 
+                                onChange={(e) => handleQuestionChange(e, index, "text")} 
+                            />
+                            {question.options.map((option, oIndex) => (
+                                <input 
+                                    key={oIndex} 
+                                    type="text" 
+                                    placeholder={`Option ${oIndex + 1}`} 
+                                    value={option} 
+                                    onChange={(e) => handleOptionChange(e, index, oIndex)} 
+                                />
+                            ))}
                         </div>
                     ))}
+                    <button onClick={handleAddQuestion}>Add Question</button>
+                    <div className="form-actions">
+                        <button onClick={handleSave}>Save</button>
+                        <button onClick={handleDiscard}>Discard</button>
+                    </div>
                 </div>
+            )}
+
+            {listQuestData && listQuestData.length > 0 ? (
+                <div className="questionnaires-list">
+                    <h2>Questionnaires List</h2>
+                    <ul>
+                        {listQuestData.map((quest, index) => (
+                            <div key={index}>
+                                <a href={`/questionnaire/${quest.data.meta.url}`}>{quest.data.name || "Untitled Questionnaire"}</a>
+                                <button onClick={() => handleDelete(quest.data.meta.url)}>Deletar</button>
+                            </div>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                <p>No questionnaires found.</p>
             )}
         </div>
     );

@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, doc, updateDoc, query, where, Timestamp } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, where, Timestamp } from "firebase/firestore"; 
 import { db } from "../firebase";
 import { v4 as uuidv4 } from 'uuid';
 import languageEnum from "./enums";
@@ -131,22 +131,40 @@ async function fetchDBQuestionnaire(url) {
     }
 }
 
-async function listDBQuestionnaire(i) {
+async function listDBQuestionnaire() {
     const reference = collection(db, "questionnaires");
-    const q = query(reference);
 
     try {
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty || querySnapshot.docs[i] == querySnapshot.empty) {
-            return null;
+        const querySnapshot = await getDocs(reference);
+        if (querySnapshot.empty) {
+            return [];
         } else {
-            const doc = querySnapshot.docs[i];
-            return { data: doc.data() };
+            const questionnaires = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                data: doc.data()
+            }));
+            return questionnaires;
         }
-
     } catch (error) {
         console.error("Error fetching questionnaire list:", error);
+        return [];
     }
 }
 
-export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire }
+async function deleteDBQuestionnaire(url) {
+    const dbQuestionnaire = await fetchDBQuestionnaire(url);
+    if (!dbQuestionnaire) {
+        throw new Error('URL de questionário inválida');
+    } else {
+        try {
+            const questRef = doc(db, "questionnaires", dbQuestionnaire.id);
+            await deleteDoc(questRef);
+            console.log("Questionário deletado:", url);
+        } catch (error) {
+            console.error("Erro ao deletar o questionário:", error);
+        }
+    }
+}
+
+
+export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire, deleteDBQuestionnaire }
