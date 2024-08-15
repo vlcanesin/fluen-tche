@@ -131,6 +131,36 @@ async function fetchDBQuestionnaire(url) {
     }
 }
 
+async function searchQuestionnaires(searchTerm) {
+    const reference = collection(db, "questionnaires");
+    const q = query(reference, where("meta.visible", "==", true));
+
+    const words = searchTerm.toLowerCase().split(/\s+/);
+
+    const tags = words.filter(word => word.startsWith('#'));
+    const textWords = words.filter(word => !word.startsWith('#'));
+
+    const searchQuery = textWords.join(' ');
+
+    try {
+
+        const querySnapshot = await getDocs(q);
+        const entries = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+
+        const filteredEntries = entries.filter(entry => {
+            const nameMatches = entry.data.name.toLowerCase().includes(searchQuery);
+            const tagsMatch = tags.some(tag => entry.data.meta.tags.map(t => t.toLowerCase()).includes(tag));
+            return nameMatches || tagsMatch;
+        });
+    
+        return filteredEntries;
+
+    } catch (error) {
+        console.error("Error searching for questionnaires:", error);
+        return [];
+    }
+}
+
 async function listDBQuestionnaire() {
     const reference = collection(db, "questionnaires");
 
@@ -198,4 +228,4 @@ async function deleteQuestionnairesWithUndefinedUrl() {
 }
 
 
-export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire, deleteDBQuestionnaire }
+export { QuestionnaireData, createDefaultDBQuestionnaire, updateDBQuestionnaire, fetchDBQuestionnaire, listDBQuestionnaire, deleteDBQuestionnaire, searchQuestionnaires }

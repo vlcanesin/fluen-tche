@@ -4,15 +4,16 @@ import {
     generateDBHandle, updateDBUserData, UserData 
 } from "../../firebase/firestore/user";
 import { 
-    listDBQuestionnaire, deleteDBQuestionnaire
+    listDBQuestionnaire, deleteDBQuestionnaire, searchQuestionnaires
 } from "../../firebase/firestore/questionnaire";
 import { useNavigate } from 'react-router-dom';
 import './index.css'
 
 const Home = () => {
-    const { currentUser } = useAuth(); // Obtém o usuário atual do contexto de autenticação
-    const [listQuest, setListQuestData] = useState([]); // Armazena a lista de questionários
-    const [showList, setShowList] = useState(false);  // Estado para controle da lista
+    const { currentUser } = useAuth(); // Get the current user from the authentication context
+    const [listQuest, setListQuestData] = useState([]); // Store the list of questionnaires
+    const [showList, setShowList] = useState(false);  // State for controlling the list
+    const [searchTerm, setSearchTerm] = useState(""); // State for storing the search term
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,37 +29,60 @@ const Home = () => {
 
     const listQuestionnaires = async () => {
         try {
-            const listedQuests = await listDBQuestionnaire(); // Obtém todos os questionários
-            setListQuestData(listedQuests); // Atualiza o estado com todos os questionários
+            const listedQuests = await listDBQuestionnaire(); // Get all questionnaires
+            setListQuestData(listedQuests); // Update state with all questionnaires
         } catch (error) {
             console.error("Error fetching questionnaires: ", error);
         }
-    };    
+    };
 
     const handleDelete = async (url) => {
         try {
-          await deleteDBQuestionnaire(url); // Deleta o questionário do banco de dados
-          // Atualiza a lista de questionários após a deleção
-          const updatedList = listQuest.filter(quest => quest.data.meta.url !== url);
-          setListQuestData(updatedList); // Corrigido para setListQuestData
-          alert("Questionário deletado com sucesso!"); // Exibe mensagem de sucesso
+            await deleteDBQuestionnaire(url); // Delete the questionnaire from the database
+            // Update the list of questionnaires after deletion
+            const updatedList = listQuest.filter(quest => quest.data.meta.url !== url);
+            setListQuestData(updatedList); // Update state with the new list
+            alert("Questionnaire deleted successfully!"); // Show success message
         } catch (error) {
-          console.error("Erro ao deletar o questionário:", error);
+            console.error("Error deleting the questionnaire:", error);
         }
-    };    
+    };
+
+    const handleSearch = async () => {
+        if (searchTerm.trim() !== "") {
+            try {
+                const results = await searchQuestionnaires(searchTerm.trim());
+                setListQuestData(results);
+            } catch (error) {
+                console.error("Error searching for questionnaires:", error);
+            }
+        } else {
+            const listedQuests = await listDBQuestionnaire(); // Get all questionnaires
+            setListQuestData(listedQuests); // Update state with all questionnaires
+        }
+    };
+
+    useEffect(() => {
+        handleSearch(); // Trigger search whenever searchTerm changes
+    }, [searchTerm]);
 
     return (
         <div className="container">
-            <h1>Bem-vindo, {currentUser?.displayName || currentUser?.email}!</h1>
-    
+            <h1>Welcome, {currentUser?.displayName || currentUser?.email}!</h1>
+
             <div className="buttons">
                 <button onClick={() => navigate('/create')}>Create New Questionnaire</button>
-                <button onClick={() => { setShowList(!showList); if (!showList) listQuestionnaires(); }}>
-                    {showList ? "Close List" : "List Questionnaires"}
-                </button>
             </div>
-    
-            {showList && (
+
+            <div className="search-bar">
+                <input
+                    type="text"
+                    placeholder="Search activities or tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
                 <div className="questionnaires-list">
                     <h2>Questionnaires List</h2>
                     {listQuest.length > 0 ? (
@@ -86,7 +110,6 @@ const Home = () => {
                         <p>No questionnaires found.</p>
                     )}
                 </div>
-            )}
         </div>
     );
 };

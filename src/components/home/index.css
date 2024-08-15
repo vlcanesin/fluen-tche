@@ -12,6 +12,17 @@ h1 {
     margin-bottom: 20px;
 }
 
+input[type="text"] {
+    padding: 8px;
+    width: 100%;
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
+h2 {
+    margin-top: 20px;
+}
+
 /* Buttons */
 .buttons {
     margin-bottom: 20px;
