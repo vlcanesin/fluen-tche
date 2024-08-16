@@ -135,7 +135,7 @@ async function searchQuestionnaires(searchTerm) {
     const reference = collection(db, "questionnaires");
     const q = query(reference, where("meta.visible", "==", true));
 
-    const words = searchTerm.toLowerCase().split(/\s+/);
+    const words = searchTerm.toLowerCase().split(" ");
 
     const tags = words.filter(word => word.startsWith('#'));
     const textWords = words.filter(word => !word.startsWith('#'));
@@ -148,7 +148,7 @@ async function searchQuestionnaires(searchTerm) {
         const entries = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
 
         const filteredEntries = entries.filter(entry => {
-            const nameMatches = entry.data.name.toLowerCase().includes(searchQuery);
+            const nameMatches = entry.data.name.toLowerCase().includes(searchQuery) && searchQuery !== '';
             const tagsMatch = tags.some(tag => entry.data.meta.tags.map(t => t.toLowerCase()).includes(tag));
             return nameMatches || tagsMatch;
         });

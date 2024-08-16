@@ -46,6 +46,7 @@ const Home = () => {
     };
 
     const handleSearch = async () => {
+        console.log(searchTerm.trim());
         if (searchTerm.trim() !== "") {
             try {
                 const results = await searchQuestionnaires(searchTerm.trim());
