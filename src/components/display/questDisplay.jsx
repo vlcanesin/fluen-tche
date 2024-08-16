@@ -1,14 +1,15 @@
-import React from "react";
+import { React, useEffect, useState } from "react";
 import { useAuth } from "../../contexts/authContext";
 import './questDisplay.css';
 import useLikeDislike from "../utils/likedislike";
 import { QuestionnaireData } from "../../firebase/firestore/questionnaire";
-import { generateDBHandle } from "../../firebase/firestore/user";
+import { generateDBHandle, fetchDBUser } from "../../firebase/firestore/user";
 import { FaThumbsUp } from '@react-icons/all-files/fa/FaThumbsUp';
 import { FaThumbsDown } from '@react-icons/all-files/fa/FaThumbsDown';
 
 const QuestDisplay = ({ quest, index, onDelete }) => {
     const { currentUser } = useAuth();
+    const [hasAccessed, setHasAccessed] = useState(false);
     const data = new QuestionnaireData(quest.data);
 
     const { hasLiked, hasDisliked, handleLike, handleDislike } = useLikeDislike(currentUser, data.meta.url);
@@ -23,8 +24,23 @@ const QuestDisplay = ({ quest, index, onDelete }) => {
         }
     };
 
+    // useEffect(() => {
+    //     const checkHistory = async () => {
+    //         if (currentUser) {
+    //             const userHandle = generateDBHandle(currentUser);
+    //             let fetchedUser = await fetchDBUser(userHandle);
+    //             if(fetchedUser) {
+    //                 if(fetchedUser.data.history.map(h => h.url).includes(data.meta.url)) {
+    //                     setHasAccessed(true);
+    //                 }
+    //             }
+    //         }
+    //     };
+    //     checkHistory();
+    // }, [currentUser]);
+
     return (
-        <li key={index} className="questionnaire-item">
+        <li key={index} className={`questionnaire-item`}>
             <div className="questionnaire-details">
                 <span className="questionnaire-title">{quest.data.name || "Untitled Questionnaire"}</span>
                 <div className="questionnaire-info">

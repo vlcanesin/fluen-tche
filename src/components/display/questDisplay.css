@@ -19,6 +19,10 @@
     background-color: #f9f9f9;
 }
 
+.questionnaire-item.accessed {
+    background-color: lightgreen;
+}
+
 .questionnaire-details {
     margin-bottom: 10px;
 }

@@ -1,19 +1,68 @@
-/*.end-screen {
-    text-align: center;
-    margin-top: 50px;
-}
-
+/* Like/Dislike Buttons */
 .like-dislike-buttons {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end; /* Align buttons to the right */
+    width: 100%;
+    gap: 5px;
     margin-top: 20px;
 }
 
 .like-dislike-buttons button {
-    margin: 0 10px;
+    display: flex;
+    align-items: center;
+    width: 100px;
+    gap: 5px;
     padding: 10px 20px;
     font-size: 16px;
-}*/
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.like-button {
+    background-color: #ffffff;
+    color: black;
+}
+.like-button:hover {
+    background-color: #dddddd;
+    color: black;
+    transition: 0.3s;
+}
+
+.like-button.liked {
+    background-color: #28a745;
+    color: white;
+}
+.like-button.liked:hover {
+    background-color: #068523;
+    color: white;
+    transition: 0.3s;
+}
+
+.dislike-button {
+    background-color: #ffffff;
+    color: black;
+}
+.dislike-button:hover {
+    background-color: #dddddd;
+    color: black;
+    transition: 0.3s;
+}
+
+.dislike-button.disliked {
+    background-color: #dc3545;
+    color: white;
+}
+.dislike-button.disliked:hover {
+    background-color: #ba1323;
+    color: white;
+    transition: 0.3s;
+}
+
+.like-dislike-buttons button:hover {
+    opacity: 0.8;
+}
 
 .home-button {
     margin-top: 30px;
