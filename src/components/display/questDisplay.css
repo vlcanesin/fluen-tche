@@ -1,0 +1,90 @@
+/* Questionnaires List */
+.questionnaires-list {
+    margin-top: 20px;
+}
+
+.questionnaires-list h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+/* Questionnaire Item */
+.questionnaire-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.questionnaire-details {
+    margin-bottom: 10px;
+}
+
+.questionnaire-title {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.questionnaire-info {
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.questionnaire-info span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.questionnaire-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.questionnaire-actions button {
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.delete-button {
+    background-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Buttons */
+.buttons {
+    margin-bottom: 20px;
+}
+
+.buttons button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.buttons button:hover {
+    background-color: #0056b3;
+}
+
+.like-dislike-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.like-dislike-buttons button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+}

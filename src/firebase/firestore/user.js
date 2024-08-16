@@ -73,9 +73,9 @@ async function createDefaultDBUser(user) {
     if (!dbUser) {
         const reference = collection(db, "users");
         const newUser = new UserData(
-            user?.displayName || "", 
-            user?.email || "", 
-            handle
+            user?.email || "",
+            handle,
+            user?.displayName || ""
         );
 
         try {
@@ -91,15 +91,16 @@ async function updateDBUserData(user, userData) {
     const handle = generateDBHandle(user);
     let dbUser = await fetchDBUser(handle);
 
-    if(!dbUser) {
-        await createDefaultDBUser(user);
-        dbUser = await fetchDBUser(handle);
+    if (!dbUser) {
+        console.error("User does not exist. Cannot update.");
+        return;
     }
 
     try {
         const userRef = doc(db, "users", dbUser.id);
         await updateDoc(userRef, userData.toJSON());
-        console.log("User data updated:", handle);
+        const updatedUser = await fetchDBUser(handle);
+        console.log("User data updated:", updatedUser.data);
     } catch (error) {
         console.error("Error updating user data:", error);
     }
