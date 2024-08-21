@@ -1,3 +1,65 @@
+/* Questionnaires List */
+.questionnaires-list {
+    margin-top: 20px;
+}
+
+.questionnaires-list h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+/* Questionnaire Item */
+.questionnaire-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.questionnaire-item.accessed {
+    background-color: lightgreen;
+}
+
+.questionnaire-details {
+    margin-bottom: 10px;
+}
+
+.questionnaire-title {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.questionnaire-info {
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.questionnaire-info span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.questionnaire-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.questionnaire-actions button {
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.delete-button {
+    background-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
 /* Like/Dislike Buttons */
 .like-dislike-buttons {
     display: flex;
@@ -62,13 +124,4 @@
 
 .like-dislike-buttons button:hover {
     opacity: 0.8;
-}
-
-.home-button {
-    margin-top: 30px;
-}
-
-.home-button button {
-    padding: 10px 20px;
-    font-size: 16px;
 }

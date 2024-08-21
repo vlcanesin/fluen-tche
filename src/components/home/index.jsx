@@ -1,26 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/authContext";
 import { 
-    generateDBHandle, updateDBUserData, UserData 
+    fetchDBUser,
+    generateDBHandle, createDefaultDBUser
 } from "../../firebase/firestore/user";
 import { 
-    listDBQuestionnaire, deleteDBQuestionnaire
+    listDBQuestionnaire, deleteDBQuestionnaire, searchQuestionnaires
 } from "../../firebase/firestore/questionnaire";
+import QuestDisplay from "../display/questDisplay";
 import { useNavigate } from 'react-router-dom';
 import './index.css'
 
 const Home = () => {
-    const { currentUser } = useAuth(); // Obtém o usuário atual do contexto de autenticação
-    const [listQuest, setListQuestData] = useState([]); // Armazena a lista de questionários
-    const [showList, setShowList] = useState(false);  // Estado para controle da lista
+    const { currentUser } = useAuth();
+    const [listQuest, setListQuestData] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const updateUserCalled = useRef(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const updateUser = async () => {           
-            if (currentUser) {
+        const updateUser = async () => {
+            if (currentUser && !updateUserCalled.current) {
+                updateUserCalled.current = true; // Set to true to prevent future calls
                 const userHandle = generateDBHandle(currentUser);
-                const userData = new UserData(currentUser.email, userHandle);
-                await updateDBUserData(currentUser, userData);
+                let fetchedUser = await fetchDBUser(userHandle);
+    
+                // Only create the user if they don't exist
+                if (!fetchedUser) {
+                    //await new Promise(resolve => setTimeout(resolve, 500));
+                    await createDefaultDBUser(currentUser);
+                    fetchedUser = await fetchDBUser(userHandle);
+                }
             }
         };
         updateUser();
@@ -28,65 +38,75 @@ const Home = () => {
 
     const listQuestionnaires = async () => {
         try {
-            const listedQuests = await listDBQuestionnaire(); // Obtém todos os questionários
-            setListQuestData(listedQuests); // Atualiza o estado com todos os questionários
+            const listedQuests = await listDBQuestionnaire();
+            setListQuestData(listedQuests);
         } catch (error) {
             console.error("Error fetching questionnaires: ", error);
         }
-    };    
+    };
+
+    const handleSearch = async () => {
+        console.log(searchTerm.trim());
+        if (searchTerm.trim() !== "") {
+            try {
+                const results = await searchQuestionnaires(searchTerm.trim());
+                setListQuestData(results);
+            } catch (error) {
+                console.error("Error searching for questionnaires:", error);
+            }
+        } else {
+            listQuestionnaires();
+        }
+    };
 
     const handleDelete = async (url) => {
         try {
-          await deleteDBQuestionnaire(url); // Deleta o questionário do banco de dados
-          // Atualiza a lista de questionários após a deleção
-          const updatedList = listQuest.filter(quest => quest.data.meta.url !== url);
-          setListQuestData(updatedList); // Corrigido para setListQuestData
-          alert("Questionário deletado com sucesso!"); // Exibe mensagem de sucesso
+            await deleteDBQuestionnaire(url);
+            setListQuestData(prevList => prevList.filter(quest => quest.data.meta.url !== url));
+            alert("Questionnaire deleted successfully!");
         } catch (error) {
-          console.error("Erro ao deletar o questionário:", error);
+            console.error("Error deleting the questionnaire:", error);
         }
-    };    
+    };
+
+    useEffect(() => {
+        handleSearch();
+    }, [searchTerm]);
 
     return (
         <div className="container">
-            <h1>Bem-vindo, {currentUser?.displayName || currentUser?.email}!</h1>
-    
+            <h1>Welcome, {currentUser?.displayName || currentUser?.email}!</h1>
+
             <div className="buttons">
                 <button onClick={() => navigate('/create')}>Create New Questionnaire</button>
-                <button onClick={() => { setShowList(!showList); if (!showList) listQuestionnaires(); }}>
-                    {showList ? "Close List" : "List Questionnaires"}
-                </button>
             </div>
-    
-            {showList && (
-                <div className="questionnaires-list">
-                    <h2>Questionnaires List</h2>
-                    {listQuest.length > 0 ? (
-                        <ul>
-                            {listQuest.map((quest, index) => (
-                                <li key={index} className="questionnaire-item">
-                                    <div className="questionnaire-details">
-                                        <span className="questionnaire-title">{quest.data.name || "Untitled Questionnaire"}</span>
-                                        <div className="questionnaire-info">
-                                            <span className="questionnaire-author">Author: {quest.data.meta.author || "N/A"}</span>
-                                            <span className="questionnaire-date">Date: {quest.data.meta.date ? new Date(quest.data.meta.date.toDate()).toLocaleDateString() : "N/A"}</span>
-                                            <span className="questionnaire-tags">Tags: {quest.data.meta.tags && quest.data.meta.tags.length > 0 ? quest.data.meta.tags.join(", ") : "N/A"}</span>
-                                            <span className="questionnaire-likes">Likes: {quest.data.meta.n_likes || 0}</span>
-                                            <span className="questionnaire-dislikes">Dislikes: {quest.data.meta.n_dislikes || 0}</span>
-                                        </div>
-                                    </div>
-                                    <div className="questionnaire-actions">
-                                        <button onClick={() => window.open(`/questionnaire/${quest.data.meta.url}`, "_blank")}>Open</button>
-                                        <button onClick={() => handleDelete(quest.data.meta.url)} className="delete-button">Delete</button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No questionnaires found.</p>
-                    )}
-                </div>
-            )}
+
+            <div className="search-bar">
+                <input
+                    type="text"
+                    placeholder="Search activities or tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            <div className="questionnaires-list">
+                <h2>Questionnaires List</h2>
+                {listQuest.length > 0 ? (
+                    <ul>
+                        {listQuest.map((quest, index) => (
+                            <QuestDisplay
+                                key={index}
+                                quest={quest}
+                                index={index}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No questionnaires found.</p>
+                )}
+            </div>
         </div>
     );
 };
